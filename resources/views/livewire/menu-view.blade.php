@@ -50,7 +50,7 @@
             </div>
         @endif
 
-        @if (!empty($breadcrumbTrail))
+        @if ($selectedCategory && !empty($breadcrumbTrail))
             <div class="flex items-center gap-2 flex-wrap text-sm text-gray-600 dark:text-gray-300 mb-4">
                 @foreach ($breadcrumbTrail as $index => $crumb)
                     @if ($index > 0)
@@ -87,7 +87,7 @@
 
 
         <!-- Subcategories -->
-        @if (!empty($childCategories))
+        @if ($items->isNotEmpty() && !empty($childCategories))
             <div class="space-y-6">
                 <div class="flex items-center justify-between">
                     <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Subcategories</h2>
