@@ -1,121 +1,159 @@
+@php use App\Models\Wordpress\Post; @endphp
 <div>
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
 
-        <!-- Hero Section -->
+        <!-- Hero -->
         <div class="text-center space-y-2">
             <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white">Explore Our Menu</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Carefully curated categories — something for every taste.</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Curated categories crafted to suit every taste.</p>
         </div>
 
-        <!-- Sticky Search + Category Scroll -->
-        <div class="sticky top-0 z-20 bg-white dark:bg-gray-900 pt-4 pb-3 space-y-2">
-
-            <!-- Search -->
-            <div class="max-w-md mx-auto px-1 sm:px-0 relative mb-5">
-                <input
-                    type="text"
-                    wire:model.live.debounce.300ms="search"
-                    placeholder="Search menu items..."
-                    class="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring focus:ring-primary-500 dark:placeholder-gray-400 pr-10"
-                />
-
-                <!-- Loading Spinner -->
-                <div
-                    wire:loading.flex
-                    wire:target="search"
-                    class="absolute inset-y-0 right-3 flex items-center"
-                >
-                    <svg class="w-4 h-4 text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle
-                            class="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            stroke-width="4"
-                        ></circle>
-                        <path
-                            class="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                        ></path>
-                    </svg>
-                </div>
+        <!-- Search -->
+        <div class="max-w-md mx-auto px-1 sm:px-0 relative">
+            <input
+                type="text"
+                wire:model.live.debounce.300ms="search"
+                placeholder="Search menu items..."
+                class="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring focus:ring-primary-500 dark:placeholder-gray-400 pr-10"
+            />
+            <div wire:loading.flex wire:target="search" class="absolute inset-y-0 right-3 flex items-center">
+                <svg class="w-4 h-4 text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
             </div>
+        </div>
 
-
-            <!-- Category Scroll -->
-            <div class="flex overflow-x-auto gap-3 no-scrollbar px-1 sm:px-0">
-                <button
-                    wire:click="selectCategory('all')"
-                    class="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border transition-all
-            {{ $selectedCategory === 'all' ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' }}">
-                    All
-                </button>
-
-                @foreach ($categories as $category)
-                    <button
+        <!-- Parent Categories -->
+        @if (!$selectedCategory)
+            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
+                @foreach ($parentCategories as $category)
+                    <div
                         wire:click="selectCategory('{{ $category['id'] }}')"
-                        class="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border transition-all
-                {{ $selectedCategory == $category['id'] ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' }}">
-                        {{ $category['name'] }}
-                    </button>
-                @endforeach
-            </div>
-
-        </div>
-
-
-
-
-        <!-- Menu Grid -->
-        <div wire:loading.remove wire:target="selectCategory">
-            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                @forelse ($items as $item)
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg border dark:border-gray-700 transition transform hover:-translate-y-1 duration-300">
-                        <div class="rounded-t-2xl overflow-hidden h-48 sm:h-40 bg-gray-100 dark:bg-gray-700">
-                            @php $image = $item->metadata->firstWhere('meta_key', 'mp_menu_gallery'); @endphp
-                            @if ($image && !empty($image->meta_value))
-                                <img src="{{ $image->meta_value }}" alt="{{ $item->post_title }}" class="w-full h-full object-cover">
-                            @else
-                                <div class="w-full h-full flex items-center justify-center text-gray-400 text-xs">No image</div>
+                        class="cursor-pointer p-6 rounded-2xl bg-white dark:bg-gray-800 shadow hover:shadow-md border dark:border-gray-700 transition-transform hover:scale-[1.02]"
+                    >
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                                {{ $category['name'] }}
+                            </h3>
+                            @if ($category['has_children'])
+                                <svg class="w-5 h-5 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor"
+                                     stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                </svg>
                             @endif
                         </div>
-                        <div class="p-5 space-y-2">
-                            <h2 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate">
-                                @php
-                                    $highlighted = $search
-                                        ? preg_replace("/($search)/i", '<mark class=\"bg-yellow-200 dark:bg-yellow-600\">$1</mark>', e($item->post_title))
-                                        : e($item->post_title);
-                                @endphp
-                                {!! $highlighted !!}
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">View dishes under this category</p>
+                    </div>
+                @endforeach
+            </div>
+        @endif
 
-                            </h2>
-                            @php $priceMeta = $item->metadata->firstWhere('meta_key', 'price'); @endphp
-                            @if ($priceMeta)
-                                <div class="text-lg font-semibold text-green-600 dark:text-green-400">
-                                    ₦{{ number_format((int) $priceMeta->meta_value, 2) }}
+        <!-- Subcategories -->
+        @if ($selectedCategory && !empty($childCategories))
+            <div class="space-y-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Subcategories</h2>
+                    <button
+                        wire:click="$set('selectedCategory', null)"
+                        class="text-sm text-gray-500 hover:underline dark:text-gray-400"
+                    >
+                        ← Back to categories
+                    </button>
+                </div>
+
+                {{-- Pill-style subcategory selector --}}
+                <div class="flex overflow-x-auto space-x-3 no-scrollbar pb-1 -mx-1 px-1">
+                    @foreach ($childCategories as $subcategory)
+                        <button
+                            wire:click="selectCategory('{{ $subcategory['id'] }}')"
+                            class="shrink-0 px-4 py-2 rounded-full border text-sm font-medium transition
+                           border-gray-300 bg-white text-gray-700
+                           dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200
+                           hover:bg-primary-100 hover:text-primary-800
+                           dark:hover:bg-primary-900 dark:hover:text-white"
+                        >
+                            {{ $subcategory['name'] }}
+                            @if ($subcategory['has_children'])
+                                <svg class="w-4 h-4 inline-block ml-1 text-gray-400 dark:text-gray-500" fill="none"
+                                     stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            @endif
+                        </button>
+                    @endforeach
+                </div>
+
+            </div>
+        @endif
+
+
+        <!-- Menu Items -->
+        @if ($items->isNotEmpty())
+            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($items as $item)
+                    <div
+                        class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl shadow-md hover:shadow-lg transition transform hover:-translate-y-1 duration-300 overflow-hidden flex">
+
+                        {{-- Image Section --}}
+                        <div class="w-32 md:w-48 h-32 md:h-40 bg-gray-100 dark:bg-gray-700 shrink-0">
+
+                            @if ($item->thumbnail_url)
+                                <img
+                                    src="{{ $item->thumbnail_url }}"
+                                    alt="{{ $item->post_title }}"
+                                    loading="lazy"
+                                    class="w-full h-full object-cover rounded-l-2xl"
+                                />
+                            @else
+                                <div class="w-full h-full flex items-center justify-center text-gray-400 text-xs">No
+                                    image
                                 </div>
                             @endif
+
+                        </div>
+
+                        {{-- Content Section --}}
+                        <div class="flex flex-col justify-between p-4 flex-1 space-y-2">
+                            <div class="space-y-1">
+                                {{-- Title with highlight --}}
+                                <h2 class="text-base md:text-lg font-bold text-gray-900 dark:text-white">
+                                    @php
+                                        $highlighted = $search
+                                            ? preg_replace("/($search)/i", '<mark class=\"bg-yellow-200 dark:bg-yellow-600\">$1</mark>', e($item->post_title))
+                                            : e($item->post_title);
+                                    @endphp
+                                    {!! $highlighted !!}
+                                </h2>
+
+                                {{-- Price --}}
+                                @php $priceMeta = $item->metadata->firstWhere('meta_key', 'price'); @endphp
+                                @if ($priceMeta)
+                                    <div class="text-sm font-semibold text-green-600 dark:text-green-400">
+                                        ₦{{ number_format((int) $priceMeta->meta_value, 2) }}
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- Tags --}}
                             <div class="flex flex-wrap gap-2 pt-1">
                                 @foreach ($item->terms as $term)
-                                    <span class="text-xs px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-full">
+                                    <span
+                                        class="text-xs px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-full">
                                         {{ $term->name }}
                                     </span>
                                 @endforeach
                             </div>
                         </div>
                     </div>
-                @empty
-                    <div class="col-span-full text-center text-gray-500 dark:text-gray-400 py-12">
-                        No menu items found in this category.
-                    </div>
-                @endforelse
+                @endforeach
             </div>
-        </div>
+        @endif
 
         <!-- Skeleton Loader -->
-        <div wire:loading.grid wire:target="selectCategory" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+        <div wire:loading.grid wire:target="selectCategory"
+             class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
             @for ($i = 0; $i < 6; $i++)
                 <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl">
                     <div class="h-48 bg-gray-200 dark:bg-gray-700 rounded-t-2xl"></div>
