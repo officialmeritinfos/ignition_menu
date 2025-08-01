@@ -15,6 +15,8 @@ class MenuView extends Component
     public array $childCategories = [];
     public string|null $selectedCategory = null;
 
+    public array $breadcrumbTrail = [];
+
     public string $search = '';
     public Collection $items;
 
@@ -64,11 +66,42 @@ class MenuView extends Component
         $this->selectedCategory = $termTaxonomyId;
         $this->items = collect();
         $this->childCategories = $this->getChildren($termTaxonomyId);
+        $this->breadcrumbTrail = $this->buildBreadcrumbTrail($termTaxonomyId);
 
         if (empty($this->childCategories)) {
             $this->fetchItems($termTaxonomyId);
         }
     }
+
+    protected function buildBreadcrumbTrail(string $termTaxonomyId): array
+    {
+        $trail = [];
+        $taxonomy = \DB::connection('wordpress')->table('term_taxonomy')
+            ->where('term_taxonomy_id', $termTaxonomyId)
+            ->first();
+
+        while ($taxonomy) {
+            $term = \DB::connection('wordpress')->table('terms')
+                ->where('term_id', $taxonomy->term_id)
+                ->first();
+
+            $trail[] = [
+                'id' => $taxonomy->term_taxonomy_id,
+                'name' => $term->name ?? 'Unknown',
+            ];
+
+            if ($taxonomy->parent === 0) {
+                break;
+            }
+
+            $taxonomy = \DB::connection('wordpress')->table('term_taxonomy')
+                ->where('term_taxonomy_id', $taxonomy->parent)
+                ->first();
+        }
+
+        return array_reverse($trail);
+    }
+
 
     public function getChildren(string $termTaxonomyId): array
     {

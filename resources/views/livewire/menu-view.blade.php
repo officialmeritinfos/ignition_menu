@@ -50,8 +50,24 @@
             </div>
         @endif
 
+        @if (!empty($breadcrumbTrail))
+            <div class="flex items-center gap-2 flex-wrap text-sm text-gray-600 dark:text-gray-300 mb-4">
+                @foreach ($breadcrumbTrail as $index => $crumb)
+                    @if ($index > 0)
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    @endif
+                    <button wire:click="selectCategory('{{ $crumb['id'] }}')" class="hover:underline">
+                        {{ $crumb['name'] }}
+                    </button>
+                @endforeach
+            </div>
+        @endif
+
+
         <!-- Subcategories -->
-        @if ($selectedCategory && !empty($childCategories))
+        @if (!empty($childCategories))
             <div class="space-y-6">
                 <div class="flex items-center justify-between">
                     <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Subcategories</h2>
