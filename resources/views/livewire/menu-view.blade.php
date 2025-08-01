@@ -58,9 +58,29 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                         </svg>
                     @endif
-                    <button wire:click="selectCategory('{{ $crumb['id'] }}')" class="hover:underline">
-                        {{ $crumb['name'] }}
-                    </button>
+                        <div class="relative inline-flex items-center">
+                            <button
+                                wire:click="selectCategory('{{ $crumb['id'] }}')"
+                                wire:loading.attr="disabled"
+                                wire:target="selectCategory('{{ $crumb['id'] }}')"
+                                class="hover:underline disabled:opacity-50"
+                            >
+                                {{ $crumb['name'] }}
+                            </button>
+
+                            <svg
+                                wire:loading
+                                wire:target="selectCategory('{{ $crumb['id'] }}')"
+                                class="w-4 h-4 ml-1 text-gray-400 animate-spin absolute -right-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z">
+                                </path>
+                            </svg>
+                        </div>
                 @endforeach
             </div>
         @endif
